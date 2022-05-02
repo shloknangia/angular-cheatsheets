@@ -1,0 +1,137 @@
+//get
+
+products = [];
+fetch = function(){
+	this.http.get("link").subscribe(
+		(res: Response) => {
+			this.products = res.json();
+		}
+	)
+}
+
+ngOnInit(){
+	this.fetchData();
+}
+
+
+//post 
+
+constructor(private http: Http){}
+confirmationString: string = "New product has been added";
+isAddedL boolean = false;
+productObj:object = {};
+
+addNew = function(product){
+	this.productObj = {
+		"name": product.name,
+		"color": product.color
+	}
+	this.http.post("http://localhost:vbkvfjbdlovk", this.productObj).subscribe((res:Response)=>{
+		console.log(res);
+		this.isAdded = true;
+	})
+
+}
+
+
+//Delete
+
+
+constructor(private http: Http){}
+id: number;
+private headers = new Headers({ 'Content-Type': 'application/json'}) ;
+
+deleteProduct = function(id){
+	if(confirm("are you sure?")){
+		const url = `${"https/local/products"}/${id}}`;
+		return this.http.delete(url, [headers}).toPromise() //import 'rxjs/add/operator/toPromise'
+			.then(() => {
+				this.fetchData();
+			})
+	}
+}
+
+
+//put
+
+id: number;
+data: object = {};
+products = [];
+productObj:object = {};
+exists = false;
+//also define headers
+
+constructor(private router: Router, private route: ActivatedRoute, private http: Http){}
+
+updateProduct(){
+	this.productObj = {
+		"name": product.name;,
+		"color": product.color,
+	};
+	const url = `${"https/local/products"}/${this.id}}`;
+	this.http.put(url, JSON.stringify(this.productObj), {headers: this.headers})
+	.toPromise()
+	.then(() => {
+		this.router.navigate(['/']);
+	})
+
+}
+
+ngOnInit(){
+	//this shows the existing data for modification
+	this.route.params.subscribe(params => {
+		this.id = +params['id'];
+	});
+	this.http.get("link").subscribe(
+		(res: Response) => {
+			this.products = res.json();
+			for(var i=0; i<this.products.length; i++){
+				if(parseInt(this.products[i].id) === this.id){
+					this.exists = true; // use this in *ngIf
+					this.data = this.products[i];
+					break;
+				}
+			}
+		}
+	)
+
+}
+
+
+tests:
+
+Isolated: 
+-test class only
+-constructed in test
+-simple
+-best for services and pipes
+-best for components and directives
+
+Integrated Tests:
+-test class and template
+-constructed by framework
+-complex
+-mainly used for components and directives
+-sometimes used for services
+-deep(multiple components comparing to child components work together) or shallow(single component)
+
+Tools:
+
+"Jasmine"
+describe()
+beforeEach()
+it()
+expect()
+Matchers
+ - toBe()
+ - toContain()
+ - toBeDefined()
+
+
+
+
+
+"Karma" for execution of tests
+-runtests in browser
+-multiple browsers
+-report results 

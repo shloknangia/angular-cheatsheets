@@ -1,0 +1,237 @@
+get custom response from service
+
+it('should update specific well with missing coordinates', () => {
+      const response = [];
+      spyOn(dashboardService, 'UpdateWellCoordinates').and.returnValue(of(response));
+      component.updateWellCoordinates(112, 80.3, 23.5, 'wellname');
+      fixture.detectChanges();
+      expect(dashboardService.UpdateWellCoordinates).toHaveBeenCalled();
+  });
+
+
+
+
+
+test cases for service:
+
+it('should be created', () => {
+    const service: LogViewerTimeService = TestBed.get(LogViewerTimeService);
+    expect(service).toBeTruthy();
+  });
+
+
+it('should call requestAllTimeChannels()', () => {
+    const service: LogViewerTimeService = TestBed.get(LogViewerTimeService);
+    let mockWellBoreId = "5e341c80-e03a-4eb6-82ff-3cb1d70d4d29";
+    service.requestAllTimeChannels(mockWellBoreId)
+      .subscribe(data => {
+        expect(data).toBeTruthy()
+      })
+  });
+
+//use of store
+  it('should dispatch GetAllTimeChannelsAction on calling getAllChannelsForTime()', () => {
+    const service: LogViewerTimeService = TestBed.get(LogViewerTimeService);
+    store = TestBed.get(Store);
+    spyOn(store, 'dispatch');
+    let mockWellBoreId = "5e341c80-e03a-4eb6-82ff-3cb1d70d4d29";
+    let action = new GetAllTimeChannelsAction(mockWellBoreId);
+    service.getAllChannelsForTime(mockWellBoreId);
+    expect(store.dispatch).toHaveBeenCalledWith(action);
+  });
+
+  it('should select getAllTimeChannels on calling getAllTimeChannelsFromStore()', () => {
+    const service: LogViewerTimeService = TestBed.get(LogViewerTimeService);
+    store = TestBed.get(Store);
+    spyOn(store, 'select');
+    service.getAllTimeChannelsFromStore();
+    expect(store.select).toHaveBeenCalledWith(getAllTimeChannels);
+  });
+
+
+
+
+test cases for store:
+
+action.ts
+
+it('should create GetAvailableLogFormatAction action', () => {
+        const payload = {};
+        const action = new Action.GetAvailableLogFormatAction(payload);
+        expect({ ...action }).toEqual({ type: Action.ActionTypes.GET_AVAILABLE_LOG_FORMATS, payload });
+    });
+
+    it('should create GetAvailableLogFormatSuccessAction action', () => {
+        const payload = {};
+        const action = new Action.GetAvailableLogFormatSuccessAction(payload);
+        expect({ ...action }).toEqual({ type: Action.ActionTypes.GET_AVAILABLE_LOG_FORMATS_SUCCESS, payload });
+    });
+
+    it('should create GetAvailableLogFormatFailureAction action', () => {
+        const payload = {};
+        const action = new Action.GetAvailableLogFormatFailureAction(payload);
+        expect({ ...action }).toEqual({ type: Action.ActionTypes.GET_AVAILABLE_LOG_FORMATS_FAILURE, payload });
+    });
+
+
+
+reducer.ts
+
+it('should handle initial state', () => {
+        expect(Reducer.logFormatReducer(undefined, new MockAction(undefined, {}))
+        ).toEqual(Reducer.initialState);
+    });
+
+    it('should handle state when GET_AVAILABLE_LOG_FORMATS is  Fired', () => {
+        expect(Reducer.logFormatReducer(undefined, new MockAction(ActionTypes.GET_AVAILABLE_LOG_FORMATS)))
+            .toEqual({ ...Reducer.initialState, availableLogFormats: [] });
+    });
+
+    it('should handle state when GET_AVAILABLE_LOG_FORMATS_SUCCESS is  Fired', () => {
+        let payload = 
+            [
+                {"id":"023772a1-cf82-4731-8fb9-f0bba3393ae6","name":"Drilling Time log"},
+                {"id":"34bc584e-833f-4c55-b9c5-df522048de62","name":"Default Time - 4 Linear Track"}
+              ];
+        expect(Reducer.logFormatReducer(undefined, new MockAction(ActionTypes.GET_AVAILABLE_LOG_FORMATS_SUCCESS, payload)))
+            .toEqual({ ...Reducer.initialState, availableLogFormats: payload });
+    });
+
+    it('should handle state when GET_AVAILABLE_LOG_FORMATS_FAILURE is  Fired', () => {
+        expect(Reducer.logFormatReducer(undefined, new MockAction(ActionTypes.GET_AVAILABLE_LOG_FORMATS_FAILURE)))
+            .toEqual({ ...Reducer.initialState, availableLogFormats: [] });
+    });
+
+class MockAction implements Action {
+    constructor(public type: any, public payload?: any) {
+        this.payload = payload;
+        this.type = type;
+    }
+}
+
+
+selector.ts
+
+
+const initialState: IState = {
+        boundsList: [],
+        timeDataLists: [],
+        allTimeChannels: [],
+        fromUTCForLogViewer: []
+      };
+   it('should return correct initial state of TimeRangeBoundData', () => {   
+       const actual = getTimeRangeBoundData.projector(initialState);
+       expect(actual).toBeTruthy(); 
+    });
+
+Use of service in test case:
+
+ it('fetchMoreData() should get minimum depth index from bounds list', () => {
+        let logViewerDepthService = TestBed.get(LogViewerTimeService);
+        spyOn(logViewerDepthService, 'getMinFromTimeIndex');
+        component.fetchMoreData({'min':10, 'max':100});
+        expect(logViewerDepthService.getMinFromTimeIndex).toHaveBeenCalled();
+    });
+
+    it('fetchMoreData() should get data from buffer', () => {
+        spyOn(component, 'getFromToDataFromBuffer');
+        component.fetchMoreData({'min':10, 'max':100});
+        expect(component.getFromToDataFromBuffer).toHaveBeenCalled();
+    });
+
+
+
+
+
+
+
+
+mock session storage:
+
+let store = {};
+        const mockSessionStorage = {
+            getItem: (key: string): string => {
+                return key in store ? store[key] : null;
+            },
+            setItem: (key: string, value: string) => {
+                store[key] = `${value}`;
+            },
+            removeItem: (key: string) => {
+                delete store[key];
+            },
+            clear: () => {
+                store = {};
+            }
+        };
+        spyOn(localStorage, 'getItem')
+            .and.callFake(mockSessionStorage.getItem);
+        spyOn(localStorage, 'setItem')
+            .and.callFake(mockSessionStorage.setItem);
+        spyOn(localStorage, 'removeItem')
+            .and.callFake(mockSessionStorage.removeItem);
+        spyOn(localStorage, 'clear')
+            .and.callFake(mockSessionStorage.clear);
+
+        sessionStorage.setItem("well-id", "123456")
+
+
+
+
+
+test cases for service with mock data and response:
+
+GET:
+it('fetchData should trigger get Request', () => {
+        const requestData = {
+            endpoint: {
+                endpoint: '/api/test',
+                type: 'GET'
+            },
+            params: {}
+        };
+        httpWrapperService.fetchData(requestData).subscribe((data: any) => {
+            expect(data.x).toBe(2);
+        });
+
+        const req = httpTestingController.expectOne(environment.API_BASE + '/api/test');
+        expect(req.request.method).toEqual('GET');
+        req.flush({ x: 2 });
+    });
+
+POST:
+    it('postData should trigger post Request', () => {
+        const requestData = { endpoint: { endpoint: '/api/test', type: 'POST' }, params: {} };
+
+        httpWrapperService.postData(requestData).subscribe((data: any) => {
+            expect(data.x).toBe(2);
+        });
+
+        const req = httpTestingController.expectOne(environment.API_BASE + '/api/test');
+        expect(req.request.method).toEqual('POST');
+        req.flush({ x: 2 });
+    });
+
+
+test case  for mat dialog
+
+const dialogRefSpyObj = jasmine.createSpyObj({
+    afterClosed: of({ id: "123" }),
+    close: null
+  });
+let deleteDialogSpy: jasmine.Spy;
+dialogRefSpyObj.componentInstance = { body: "" };
+
+beforeEach(()=> {
+    deleteDialogSpy = spyOn(TestBed.get(MatDialog), "open").and.returnValue(
+      dialogRefSpyObj
+    );
+  })
+}
+it('should emit event to delete a log Format',() => {
+    component.deleteLogFormat(logFormatList[0])
+    component.matDialog.open(component.deleteLogFormatDialog, {
+      width: "500px"
+    });
+    expect(deleteDialogSpy).toHaveBeenCalled();
+  })
+
